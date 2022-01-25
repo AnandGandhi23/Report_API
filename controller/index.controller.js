@@ -1,6 +1,7 @@
 const db = require('../config/db.config');
 
 const getReportData = (req, res) => {
+    console.log('getReportData API called--')
     db.getConnection((err, connection) => {
         if(err) { 
             console.log(err); 
@@ -29,7 +30,7 @@ const getReportData = (req, res) => {
     })
 };
 
-const getReportDataByYearr = (req, res) => {
+const getReportDataByYear = (req, res) => {
     db.getConnection((err, connection) => {
         if(err) {
             console.log(err); 
@@ -57,7 +58,43 @@ const getReportDataByYearr = (req, res) => {
     })
 }
 
+const getReportDataByFranchiseName = (req, res) => {
+    db.getConnection(async (err, connection) => {
+        if (err) {
+            console.log(err);
+            return;
+        }
+
+        const franchiseIds = req.body.franchiseIds;
+        console.log('franchiseIds---', req);
+        const response = {};
+        let sqlQuery
+        for (const id of franchiseIds) {
+            sqlQuery = "SELECT SUM(NetSales) as grossSale FROM sales_actual WHERE Location='" + id + "';" +
+                "SELECT SUM(NetSales) as returnSale FROM sales_actual WHERE Location='" + id + "';" +
+                "SELECT SUM(NetSales) as cancelIncome FROM sales_actual WHERE Location='" + id + "';" +
+                "SELECT SUM(NetSales) as totalIncome FROM sales_actual WHERE Location='" + id + "';" +
+                "SELECT SUM(Expenses_Amount) as cogs FROM cogs WHERE Location='" + id + "';" +
+                "SELECT SUM(commission_due) as commissionConsultant FROM commissions WHERE location='" + id + "';" +
+                "SELECT SUM(commission_due) as commissionPCC FROM `non-hcp_commissions` WHERE location='" + id + "';" +
+                "SELECT SUM(commission_due) as commissionTelemarketing FROM `non-hcp_commissions` WHERE role='Telemarketing' AND location='" + id + "'"
+
+            console.log('sqlQuery--', sqlQuery);
+            await connection.query(sqlQuery, function (err, results, fields) {
+                if (!err) {
+                    console.log(`for id: ${id}-------`, JSON.stringify(results));
+                    // res.send(JSON.stringify(results));
+                } else {
+                    console.log('Error while performing query to get report data by franchise name', err);
+                }
+            });
+        }
+        connection.release();
+    })
+}
+
 module.exports = {
     getReportData,
-    getReportDataByYearr
+    getReportDataByYear,
+    getReportDataByFranchiseName
 }
