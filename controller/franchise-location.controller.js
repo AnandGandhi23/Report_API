@@ -6,11 +6,9 @@ const getDistinctFranchiseName = (req, res) => {
             console.log(err); 
             return; 
         }
-        var startDate = req.query.startDate;
-        var endDate = req.query.endDate;
 
         const sqlQuery =
-        "SELECT DISTINCT franchise_name as label, franchise_id as value FROM `franchise_locations`;";
+        "SELECT DISTINCT franchise_name as label, franchise_id as value FROM `franchise_locations` WHERE franchise_id NOT IN('CF0034', 'CF0037', 'CF0049');";
         connection.query(sqlQuery, function(err, results) {
             connection.release();
             if (!err) {
@@ -21,6 +19,49 @@ const getDistinctFranchiseName = (req, res) => {
         });
     })
 };
+
+const getDistinctLocationGroup = (req, res) => {
+    db.getConnection((err, connection) => {
+        if(err) { 
+            console.log(err); 
+            return; 
+        }
+
+        const sqlQuery =
+        "SELECT DISTINCT `location group` as label, location_id as value FROM `franchise_locations` WHERE franchise_id NOT IN('CF0034', 'CF0037', 'CF0049');";
+        connection.query(sqlQuery, function(err, results) {
+            connection.release();
+            if (!err) {
+                res.send(JSON.stringify(results));
+            }   else{
+                console.log('Error while performing query to get location group', err);
+            }
+        });
+    })
+};
+
+const getDistinctLocationName = (req, res) => {
+    db.getConnection((err, connection) => {
+        if(err) { 
+            console.log(err); 
+            return; 
+        }
+
+        const sqlQuery =
+        "SELECT DISTINCT `location_name` as label, location_id as value FROM `franchise_locations` WHERE franchise_id NOT IN('CF0034', 'CF0037', 'CF0049');";
+        connection.query(sqlQuery, function(err, results) {
+            connection.release();
+            if (!err) {
+                res.send(JSON.stringify(results));
+            }   else{
+                console.log('Error while performing query to get location name', err);
+            }
+        });
+    })
+};
+
 module.exports = {
-    getDistinctFranchiseName
+    getDistinctFranchiseName,
+    getDistinctLocationGroup,
+    getDistinctLocationName
 }

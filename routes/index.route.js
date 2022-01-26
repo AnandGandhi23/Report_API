@@ -9,7 +9,14 @@ router.get('/getReportDataByYear', indexController.getReportDataByYear);
 
 router.get('/franchise-location/getDistinctFranchiseName', franchiseLocationController.getDistinctFranchiseName);
 
+router.get('/franchise-location/getDistinctLocationGroup', franchiseLocationController.getDistinctLocationGroup);
+
+router.get('/franchise-location/getDistinctLocationName', franchiseLocationController.getDistinctLocationName);
+
 router.post('/getReportDataByFranchiseName', indexController.getReportDataByFranchiseName);
 
+router.post('/getReportDataByLocationGroup', indexController.getReportDataByLocationGroup);
+
+router.post('/getReportDataByLocationName', indexController.getReportDataByLocationName);
 
 module.exports = router;
