@@ -64,25 +64,26 @@ const getReportDataByFranchiseName = (req, res) => {
             console.log(err); 
             return; 
         }
-
+        var startDate = req.query.startDate;
+        var endDate = req.query.endDate;
         var franchiseIds = req.body.franchiseIds;
         const sqlQuery = 
         "SELECT fl.franchise_id, SUM(sa.NetSales) grossSale FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
-            "fl.franchise_id IN (?) AND sa.TransactionType='Sale' GROUP BY fl.franchise_name;" +
+            "fl.franchise_id IN (?) AND sa.TransactionDate NOT REGEXP '0000-00-00' AND (sa.TransactionDate BETWEEN '" + startDate + "' AND '" + endDate + "') AND sa.TransactionType='Sale' GROUP BY fl.franchise_name;" +
         "SELECT fl.franchise_id, SUM(sa.NetSales) returnSale FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
-            "fl.franchise_id IN (?) AND sa.TransactionType='Returned' GROUP BY fl.franchise_name;" +
+            "fl.franchise_id IN (?) AND sa.TransactionDate NOT REGEXP '0000-00-00' AND (sa.TransactionDate BETWEEN '" + startDate + "' AND '" + endDate + "') AND sa.TransactionType='Returned' GROUP BY fl.franchise_name;" +
         "SELECT fl.franchise_id, SUM(sa.NetSales) cancelIncome FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
-            "fl.franchise_id IN (?) AND sa.TransactionType='Cancelled' GROUP BY fl.franchise_name;" +
+            "fl.franchise_id IN (?) AND sa.TransactionDate NOT REGEXP '0000-00-00' AND (sa.TransactionDate BETWEEN '" + startDate + "' AND '" + endDate + "') AND sa.TransactionType='Cancelled' GROUP BY fl.franchise_name;" +
         "SELECT fl.franchise_id, SUM(sa.NetSales) TotalIncome FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
-            "fl.franchise_id IN (?) GROUP BY fl.franchise_name;" +
+            "fl.franchise_id IN (?) AND sa.TransactionDate NOT REGEXP '0000-00-00' AND (sa.TransactionDate BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.franchise_name;" +
         "SELECT fl.franchise_id, SUM(cg.Expenses_Amount) cogs FROM franchise_locations fl INNER JOIN cogs cg ON fl.location_id = cg.Location WHERE " + 
-            "fl.franchise_id IN (?) GROUP BY fl.franchise_name;" +
+            "fl.franchise_id IN (?) AND cg.`Transaction Date` NOT REGEXP '0000-00-00' AND (cg.`Transaction Date` BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.franchise_name;" +
         "SELECT fl.franchise_id, SUM(cc.commission_due) commissionConsultant FROM franchise_locations fl INNER JOIN commissions cc ON fl.location_id = cc.location WHERE " + 
-            "fl.franchise_id IN (?) GROUP BY fl.franchise_name;" +
+            "fl.franchise_id IN (?) AND cc.sale_date NOT REGEXP '0000-00-00' AND (cc.sale_date BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.franchise_name;" +
         "SELECT fl.franchise_id, SUM(nhc.commission_due) commissionPCC FROM franchise_locations fl INNER JOIN `non-hcp_commissions` nhc ON fl.location_id = nhc.location WHERE " + 
-            "fl.franchise_id IN (?) GROUP BY fl.franchise_name;" +
+            "fl.franchise_id IN (?) AND nhc.sale_date NOT REGEXP '0000-00-00' AND (nhc.sale_date BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.franchise_name;" +
         "SELECT fl.franchise_id, SUM(nhc.commission_due) commissionTelemarketing FROM franchise_locations fl INNER JOIN `non-hcp_commissions` nhc ON fl.location_id = nhc.location WHERE " + 
-            "fl.franchise_id IN (?) AND nhc.role='Telemarketing' GROUP BY fl.franchise_name;"
+            "fl.franchise_id IN (?) AND nhc.sale_date NOT REGEXP '0000-00-00' AND (nhc.sale_date BETWEEN '" + startDate + "' AND '" + endDate + "') AND nhc.role='Telemarketing' GROUP BY fl.franchise_name;"
 
         const response = {};
         connection.query(sqlQuery, [ franchiseIds, franchiseIds, franchiseIds, franchiseIds, franchiseIds, franchiseIds, franchiseIds, franchiseIds ], function(err, results, fields) {
@@ -117,24 +118,26 @@ const getReportDataByLocationGroup = (req, res) => {
             return; 
         }
 
+        var startDate = req.query.startDate;
+        var endDate = req.query.endDate;
         var franchiseIds = req.body.franchiseIds;
         const sqlQuery = 
         "SELECT fl.location_id, SUM(sa.NetSales) grossSale FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
-            "fl.location_id IN (?) AND sa.TransactionType='Sale' GROUP BY fl.`location group`;" +
+            "fl.location_id IN (?) AND sa.TransactionDate NOT REGEXP '0000-00-00' AND (sa.TransactionDate BETWEEN '" + startDate + "' AND '" + endDate + "') AND sa.TransactionType='Sale' GROUP BY fl.`location group`;" +
         "SELECT fl.location_id, SUM(sa.NetSales) returnSale FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
-            "fl.location_id IN (?) AND sa.TransactionType='Returned' GROUP BY fl.`location group`;" +
+            "fl.location_id IN (?) AND sa.TransactionDate NOT REGEXP '0000-00-00' AND (sa.TransactionDate BETWEEN '" + startDate + "' AND '" + endDate + "') AND sa.TransactionType='Returned' GROUP BY fl.`location group`;" +
         "SELECT fl.location_id, SUM(sa.NetSales) cancelIncome FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
-            "fl.location_id IN (?) AND sa.TransactionType='Cancelled' GROUP BY fl.`location group`;" +
+            "fl.location_id IN (?) AND sa.TransactionDate NOT REGEXP '0000-00-00' AND (sa.TransactionDate BETWEEN '" + startDate + "' AND '" + endDate + "') AND sa.TransactionType='Cancelled' GROUP BY fl.`location group`;" +
         "SELECT fl.location_id, SUM(sa.NetSales) TotalIncome FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
-            "fl.location_id IN (?) GROUP BY fl.`location group`;" +
+            "fl.location_id IN (?) AND sa.TransactionDate NOT REGEXP '0000-00-00' AND (sa.TransactionDate BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.`location group`;" +
         "SELECT fl.location_id, SUM(cg.Expenses_Amount) cogs FROM franchise_locations fl INNER JOIN cogs cg ON fl.location_id = cg.Location WHERE " + 
-            "fl.location_id IN (?) GROUP BY fl.`location group`;" +
+            "fl.location_id IN (?) AND cg.`Transaction Date` NOT REGEXP '0000-00-00' AND (cg.`Transaction Date` BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.`location group`;" +
         "SELECT fl.location_id, SUM(cc.commission_due) commissionConsultant FROM franchise_locations fl INNER JOIN commissions cc ON fl.location_id = cc.location WHERE " + 
-            "fl.location_id IN (?) GROUP BY fl.`location group`;" +
+            "fl.location_id IN (?) AND cc.sale_date NOT REGEXP '0000-00-00' AND (cc.sale_date BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.`location group`;" +
         "SELECT fl.location_id, SUM(nhc.commission_due) commissionPCC FROM franchise_locations fl INNER JOIN `non-hcp_commissions` nhc ON fl.location_id = nhc.location WHERE " + 
-            "fl.location_id IN (?) GROUP BY fl.`location group`;" +
+            "fl.location_id IN (?) AND nhc.sale_date NOT REGEXP '0000-00-00' AND (nhc.sale_date BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.`location group`;" +
         "SELECT fl.location_id, SUM(nhc.commission_due) commissionTelemarketing FROM franchise_locations fl INNER JOIN `non-hcp_commissions` nhc ON fl.location_id = nhc.location WHERE " + 
-            "fl.location_id IN (?) AND nhc.role='Telemarketing' GROUP BY fl.`location group`;"
+            "fl.location_id IN (?) AND nhc.sale_date NOT REGEXP '0000-00-00' AND (nhc.sale_date BETWEEN '" + startDate + "' AND '" + endDate + "') AND nhc.role='Telemarketing' GROUP BY fl.`location group`;"
 
         const response = {};
         connection.query(sqlQuery, [ franchiseIds, franchiseIds, franchiseIds, franchiseIds, franchiseIds, franchiseIds, franchiseIds, franchiseIds ], function(err, results, fields) {
@@ -169,24 +172,26 @@ const getReportDataByLocationName = (req, res) => {
             return; 
         }
 
+        var startDate = req.query.startDate;
+        var endDate = req.query.endDate;
         var franchiseIds = req.body.franchiseIds;
         const sqlQuery = 
         "SELECT fl.location_id, SUM(sa.NetSales) grossSale FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
-            "fl.location_id IN (?) AND sa.TransactionType='Sale' GROUP BY fl.`location_name`;" +
+            "fl.location_id IN (?) AND sa.TransactionDate NOT REGEXP '0000-00-00' AND (sa.TransactionDate BETWEEN '" + startDate + "' AND '" + endDate + "') AND sa.TransactionType='Sale' GROUP BY fl.`location_name`;" +
         "SELECT fl.location_id, SUM(sa.NetSales) returnSale FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
-            "fl.location_id IN (?) AND sa.TransactionType='Returned' GROUP BY fl.`location_name`;" +
+            "fl.location_id IN (?) AND sa.TransactionDate NOT REGEXP '0000-00-00' AND (sa.TransactionDate BETWEEN '" + startDate + "' AND '" + endDate + "') AND sa.TransactionType='Returned' GROUP BY fl.`location_name`;" +
         "SELECT fl.location_id, SUM(sa.NetSales) cancelIncome FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
-            "fl.location_id IN (?) AND sa.TransactionType='Cancelled' GROUP BY fl.`location_name`;" +
+            "fl.location_id IN (?) AND sa.TransactionDate NOT REGEXP '0000-00-00' AND (sa.TransactionDate BETWEEN '" + startDate + "' AND '" + endDate + "') AND sa.TransactionType='Cancelled' GROUP BY fl.`location_name`;" +
         "SELECT fl.location_id, SUM(sa.NetSales) TotalIncome FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
-            "fl.location_id IN (?) GROUP BY fl.`location_name`;" +
+            "fl.location_id IN (?) AND sa.TransactionDate NOT REGEXP '0000-00-00' AND (sa.TransactionDate BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.`location_name`;" +
         "SELECT fl.location_id, SUM(cg.Expenses_Amount) cogs FROM franchise_locations fl INNER JOIN cogs cg ON fl.location_id = cg.Location WHERE " + 
-            "fl.location_id IN (?) GROUP BY fl.`location_name`;" +
+            "fl.location_id IN (?) AND cg.`Transaction Date` NOT REGEXP '0000-00-00' AND (cg.`Transaction Date` BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.`location_name`;" +
         "SELECT fl.location_id, SUM(cc.commission_due) commissionConsultant FROM franchise_locations fl INNER JOIN commissions cc ON fl.location_id = cc.location WHERE " + 
-            "fl.location_id IN (?) GROUP BY fl.`location_name`;" +
+            "fl.location_id IN (?) AND cc.sale_date NOT REGEXP '0000-00-00' AND (cc.sale_date BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.`location_name`;" +
         "SELECT fl.location_id, SUM(nhc.commission_due) commissionPCC FROM franchise_locations fl INNER JOIN `non-hcp_commissions` nhc ON fl.location_id = nhc.location WHERE " + 
-            "fl.location_id IN (?) GROUP BY fl.`location_name`;" +
+            "fl.location_id IN (?) AND nhc.sale_date NOT REGEXP '0000-00-00' AND (nhc.sale_date BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.`location_name`;" +
         "SELECT fl.location_id, SUM(nhc.commission_due) commissionTelemarketing FROM franchise_locations fl INNER JOIN `non-hcp_commissions` nhc ON fl.location_id = nhc.location WHERE " + 
-            "fl.location_id IN (?) AND nhc.role='Telemarketing' GROUP BY fl.`location_name`;"
+            "fl.location_id IN (?) AND nhc.sale_date NOT REGEXP '0000-00-00' AND (nhc.sale_date BETWEEN '" + startDate + "' AND '" + endDate + "') AND nhc.role='Telemarketing' GROUP BY fl.`location_name`;"
 
         const response = {};
         connection.query(sqlQuery, [ franchiseIds, franchiseIds, franchiseIds, franchiseIds, franchiseIds, franchiseIds, franchiseIds, franchiseIds ], function(err, results, fields) {
