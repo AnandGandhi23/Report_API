@@ -74,7 +74,7 @@ const getReportDataByFranchiseName = (req, res) => {
             "fl.franchise_id IN (?) AND sa.TransactionDate NOT REGEXP '0000-00-00' AND (sa.TransactionDate BETWEEN '" + startDate + "' AND '" + endDate + "') AND sa.TransactionType='Returned' GROUP BY fl.franchise_name;" +
         "SELECT fl.franchise_id, SUM(sa.NetSales) cancelIncome FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
             "fl.franchise_id IN (?) AND sa.TransactionDate NOT REGEXP '0000-00-00' AND (sa.TransactionDate BETWEEN '" + startDate + "' AND '" + endDate + "') AND sa.TransactionType='Cancelled' GROUP BY fl.franchise_name;" +
-        "SELECT fl.franchise_id, SUM(sa.NetSales) TotalIncome FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
+        "SELECT fl.franchise_id, SUM(sa.NetSales) totalIncome FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
             "fl.franchise_id IN (?) AND sa.TransactionDate NOT REGEXP '0000-00-00' AND (sa.TransactionDate BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.franchise_name;" +
         "SELECT fl.franchise_id, SUM(cg.Expenses_Amount) cogs FROM franchise_locations fl INNER JOIN cogs cg ON fl.location_id = cg.Location WHERE " + 
             "fl.franchise_id IN (?) AND cg.`Transaction Date` NOT REGEXP '0000-00-00' AND (cg.`Transaction Date` BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.franchise_name;" +
@@ -128,7 +128,7 @@ const getReportDataByLocationGroup = (req, res) => {
             "fl.location_id IN (?) AND sa.TransactionDate NOT REGEXP '0000-00-00' AND (sa.TransactionDate BETWEEN '" + startDate + "' AND '" + endDate + "') AND sa.TransactionType='Returned' GROUP BY fl.`location group`;" +
         "SELECT fl.location_id, SUM(sa.NetSales) cancelIncome FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
             "fl.location_id IN (?) AND sa.TransactionDate NOT REGEXP '0000-00-00' AND (sa.TransactionDate BETWEEN '" + startDate + "' AND '" + endDate + "') AND sa.TransactionType='Cancelled' GROUP BY fl.`location group`;" +
-        "SELECT fl.location_id, SUM(sa.NetSales) TotalIncome FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
+        "SELECT fl.location_id, SUM(sa.NetSales) totalIncome FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
             "fl.location_id IN (?) AND sa.TransactionDate NOT REGEXP '0000-00-00' AND (sa.TransactionDate BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.`location group`;" +
         "SELECT fl.location_id, SUM(cg.Expenses_Amount) cogs FROM franchise_locations fl INNER JOIN cogs cg ON fl.location_id = cg.Location WHERE " + 
             "fl.location_id IN (?) AND cg.`Transaction Date` NOT REGEXP '0000-00-00' AND (cg.`Transaction Date` BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.`location group`;" +
@@ -182,7 +182,7 @@ const getReportDataByLocationName = (req, res) => {
             "fl.location_id IN (?) AND sa.TransactionDate NOT REGEXP '0000-00-00' AND (sa.TransactionDate BETWEEN '" + startDate + "' AND '" + endDate + "') AND sa.TransactionType='Returned' GROUP BY fl.`location_name`;" +
         "SELECT fl.location_id, SUM(sa.NetSales) cancelIncome FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
             "fl.location_id IN (?) AND sa.TransactionDate NOT REGEXP '0000-00-00' AND (sa.TransactionDate BETWEEN '" + startDate + "' AND '" + endDate + "') AND sa.TransactionType='Cancelled' GROUP BY fl.`location_name`;" +
-        "SELECT fl.location_id, SUM(sa.NetSales) TotalIncome FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
+        "SELECT fl.location_id, SUM(sa.NetSales) totalIncome FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
             "fl.location_id IN (?) AND sa.TransactionDate NOT REGEXP '0000-00-00' AND (sa.TransactionDate BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.`location_name`;" +
         "SELECT fl.location_id, SUM(cg.Expenses_Amount) cogs FROM franchise_locations fl INNER JOIN cogs cg ON fl.location_id = cg.Location WHERE " + 
             "fl.location_id IN (?) AND cg.`Transaction Date` NOT REGEXP '0000-00-00' AND (cg.`Transaction Date` BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.`location_name`;" +
