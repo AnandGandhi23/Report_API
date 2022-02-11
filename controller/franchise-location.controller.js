@@ -49,7 +49,8 @@ const getDistinctLocationName = (req, res) => {
         }
 
         const sqlQuery =
-        "SELECT DISTINCT `location_name` as label, location_id as value FROM `franchise_locations` WHERE franchise_id NOT IN('CF0034', 'CF0037', 'CF0049', 'CF6684', 'CF0004') order by `location_name`;";
+        "SELECT DISTINCT `location group` as locationGroup, location_name as locationName,location_id as locationId FROM franchise_locations WHERE franchise_id NOT IN('CF0034', 'CF0037', 'CF0049') " +
+        "AND `location group` IS NOT NULL AND `location group` <> '' ORDER BY `location group`;";
         connection.query(sqlQuery, function(err, results) {
             connection.release();
             if (!err) {
