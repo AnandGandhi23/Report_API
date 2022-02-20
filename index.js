@@ -21,7 +21,7 @@ app.use(function(req, res, next) {
 });
 app.use(routes);
 
-const PORT = 8080;
+const PORT = 8000;
 
 app.listen(process.env.PORT || PORT, function() {
     console.log("server started on " + PORT);
