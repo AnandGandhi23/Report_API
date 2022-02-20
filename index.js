@@ -21,7 +21,9 @@ app.use(function(req, res, next) {
 });
 app.use(routes);
 
-const PORT = 8000;
+const PORT = 3000;
+
+app.get('/',(req, res) => res.send('Hello World'));
 
 app.listen(process.env.PORT || PORT, function() {
     console.log("server started on " + PORT);
