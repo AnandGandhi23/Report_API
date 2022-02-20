@@ -22,7 +22,14 @@ const getReportData = (req, res) => {
         connection.query(sqlQuery, function(err, results) {
             connection.release();
             if (!err) {
-                res.send(JSON.stringify(results));
+                let response = {};
+                results.map((data) => {
+                    const objData = data[0];
+                    Object.keys(objData).forEach(key => {
+                        response[key] = objData[key];
+                    });
+                });
+                res.send(JSON.stringify(response));
             }   else{
                 console.log('Error while performing query to get report data', err);
             }
@@ -50,7 +57,14 @@ const getReportDataByYear = (req, res) => {
         connection.query(sqlQuery, function(err, results, fields) {
             connection.release();
             if (!err) {
-                res.send(JSON.stringify(results));
+                let response = {};
+                results.map((data) => {
+                    const objData = data[0];
+                    Object.keys(objData).forEach(key => {
+                        response[key] = objData[key];
+                    });
+                });
+                res.send(JSON.stringify(response));
             }   else{
                 console.log('Error while performing query to get yearly report data', err);
             }
