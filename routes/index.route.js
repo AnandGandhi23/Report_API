@@ -1,6 +1,7 @@
 const express = require('express');
 const indexController = require('../controller/index.controller');
 const franchiseLocationController = require('../controller/franchise-location.controller');
+const authenticationController = require('../controller/authentication/authentication.controller');
 const router = new express.Router();
 
 router.get('/getReportData', indexController.getReportData);
@@ -18,5 +19,7 @@ router.post('/getReportDataByFranchiseName', indexController.getReportDataByFran
 router.post('/getReportDataByLocationGroup', indexController.getReportDataByLocationGroup);
 
 router.post('/getReportDataByLocationName', indexController.getReportDataByLocationName);
+
+router.post('/authentication', authenticationController.authentication);
 
 module.exports = router;
