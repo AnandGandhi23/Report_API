@@ -8,7 +8,7 @@ const getDistinctFranchiseName = (req, res) => {
         }
 
         const sqlQuery =
-        "SELECT DISTINCT franchise_name as label, franchise_id as value FROM `franchise_locations` WHERE franchise_id NOT IN('CF0034', 'CF0037', 'CF0049') order by franchise_name;";
+        "SELECT DISTINCT franchise_name as label, franchise_id as value FROM `franchise_locations` WHERE franchise_id <> '' AND franchise_id NOT IN('CF0034', 'CF0037', 'CF0049') order by franchise_name;";
         connection.query(sqlQuery, function(err, results) {
             connection.release();
             if (!err) {
