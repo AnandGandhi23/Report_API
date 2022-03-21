@@ -28,6 +28,8 @@ const getReportData = (req, res) => {
         const query6 = "SELECT SUM(commission_due) as commissionConsultant FROM commissions WHERE sale_date NOT REGEXP '0000-00-00' AND (sale_date BETWEEN '" + startDate + "' AND '" + endDate + "');";
         const query7 = "SELECT SUM(commission_due) as commissionPCC FROM `non-hcp_commissions` WHERE sale_date NOT REGEXP '0000-00-00' AND (sale_date BETWEEN '" + startDate + "' AND '" + endDate + "');";
         const query8 = "SELECT SUM(commission_due) as commissionTelemarketing FROM `non-hcp_commissions` WHERE role='Telemarketing' AND sale_date NOT REGEXP '0000-00-00' AND (sale_date BETWEEN '" + startDate + "' AND '" + endDate + "')";
+        const query9 = "SELECT SUM(bill.Expenses_Amount) as operatingExpenses FROM `bill_dot_com_bills` bill INNER JOIN chart_of_accounts coa ON bill.Expenses_Account = coa.account_name " + 
+            "INNER JOIN franchise_locations fl ON bill.Expenses_Class = fl.location_name WHERE coa.type = 'Operating Expenses' AND bill.Transaction_Date NOT REGEXP '0000-00-00' AND (bill.Transaction_Date BETWEEN '" + startDate + "' AND '" + endDate + "')";
 
         Promise.all(
             [
@@ -38,7 +40,9 @@ const getReportData = (req, res) => {
                 selectquery(query5, connection),
                 selectquery(query6, connection),
                 selectquery(query7, connection),
-                selectquery(query8, connection)
+                selectquery(query8, connection),
+                selectquery(query9, connection)
+
             ])
             .then((results) => {
                 let response = {};
@@ -94,6 +98,8 @@ const getReportDataByYear = (req, res) => {
         const query6 = "SELECT SUM(commission_due) as commissionConsultant FROM commissions WHERE year(sale_date)=" + year;
         const query7 = "SELECT SUM(commission_due) as commissionPCC FROM `non-hcp_commissions` WHERE year(sale_date)=" + year;
         const query8 = "SELECT SUM(commission_due) as commissionTelemarketing FROM `non-hcp_commissions` WHERE role='Telemarketing' AND year(sale_date)=" + year;
+        const query9 = "SELECT SUM(bill.Expenses_Amount) as operatingExpenses FROM `bill_dot_com_bills` bill INNER JOIN chart_of_accounts coa ON bill.Expenses_Account = coa.account_name " + 
+            "INNER JOIN franchise_locations fl ON bill.Expenses_Class = fl.location_name WHERE coa.type = 'Operating Expenses' AND year(bill.Transaction_Date)=" + year;
 
         Promise.all(
             [
@@ -104,7 +110,8 @@ const getReportDataByYear = (req, res) => {
                 selectquery(query5, connection),
                 selectquery(query6, connection),
                 selectquery(query7, connection),
-                selectquery(query8, connection)
+                selectquery(query8, connection),
+                selectquery(query9, connection)
             ])
             .then((results) => {
                 let response = {};
@@ -179,8 +186,10 @@ const getReportDataByFranchiseName = (req, res) => {
         const query7 = "SELECT fl.franchise_id, SUM(nhc.commission_due) commissionPCC FROM franchise_locations fl INNER JOIN `non-hcp_commissions` nhc ON fl.location_id = nhc.location WHERE " + 
             "fl.franchise_id IN (?) AND nhc.sale_date NOT REGEXP '0000-00-00' AND (nhc.sale_date BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.franchise_name";
         const query8 = "SELECT fl.franchise_id, SUM(nhc.commission_due) commissionTelemarketing FROM franchise_locations fl INNER JOIN `non-hcp_commissions` nhc ON fl.location_id = nhc.location WHERE " + 
-        "fl.franchise_id IN (?) AND nhc.sale_date NOT REGEXP '0000-00-00' AND (nhc.sale_date BETWEEN '" + startDate + "' AND '" + endDate + "') AND nhc.role='Telemarketing' GROUP BY fl.franchise_name";
-
+            "fl.franchise_id IN (?) AND nhc.sale_date NOT REGEXP '0000-00-00' AND (nhc.sale_date BETWEEN '" + startDate + "' AND '" + endDate + "') AND nhc.role='Telemarketing' GROUP BY fl.franchise_name";
+        const query9 = "SELECT fl.franchise_id, SUM(bill.Expenses_Amount) operatingExpenses FROM `bill_dot_com_bills` bill INNER JOIN chart_of_accounts coa ON bill.Expenses_Account = coa.account_name " + 
+            "INNER JOIN franchise_locations fl ON bill.Expenses_Class = fl.location_name WHERE coa.type = 'Operating Expenses' AND fl.franchise_id IN (?) AND bill.Transaction_Date NOT REGEXP '0000-00-00' AND " +
+             "(bill.Transaction_Date BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.franchise_name";
         Promise.all(
             [
                 selectFilteredQuery(query1, connection, franchiseIds),
@@ -190,7 +199,8 @@ const getReportDataByFranchiseName = (req, res) => {
                 selectFilteredQuery(query5, connection, franchiseIds),
                 selectFilteredQuery(query6, connection, franchiseIds),
                 selectFilteredQuery(query7, connection, franchiseIds),
-                selectFilteredQuery(query8, connection, franchiseIds)
+                selectFilteredQuery(query8, connection, franchiseIds),
+                selectFilteredQuery(query9, connection, franchiseIds)
             ])
             .then((results) => {
                 let response = {};
@@ -282,7 +292,9 @@ const getReportDataByLocationGroup = (req, res) => {
             "fl.`location group` IN (?) AND nhc.sale_date NOT REGEXP '0000-00-00' AND (nhc.sale_date BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.`location group`"
         const query8 = "SELECT fl.`location group`, SUM(nhc.commission_due) commissionTelemarketing FROM franchise_locations fl INNER JOIN `non-hcp_commissions` nhc ON fl.location_id = nhc.location WHERE " + 
             "fl.`location group` IN (?) AND nhc.sale_date NOT REGEXP '0000-00-00' AND (nhc.sale_date BETWEEN '" + startDate + "' AND '" + endDate + "') AND nhc.role='Telemarketing' GROUP BY fl.`location group`"
-
+        const query9 = "SELECT fl.`location group`, SUM(bill.Expenses_Amount) operatingExpenses FROM `bill_dot_com_bills` bill INNER JOIN chart_of_accounts coa ON bill.Expenses_Account = coa.account_name " + 
+            "INNER JOIN franchise_locations fl ON bill.Expenses_Class = fl.location_name WHERE coa.type = 'Operating Expenses' AND fl.`location group` IN (?) AND bill.Transaction_Date NOT REGEXP '0000-00-00' AND " +
+             "(bill.Transaction_Date BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.`location group`";
         
         Promise.all(
             [
@@ -293,7 +305,8 @@ const getReportDataByLocationGroup = (req, res) => {
                 selectFilteredQuery(query5, connection, franchiseIds),
                 selectFilteredQuery(query6, connection, franchiseIds),
                 selectFilteredQuery(query7, connection, franchiseIds),
-                selectFilteredQuery(query8, connection, franchiseIds)
+                selectFilteredQuery(query8, connection, franchiseIds),
+                selectFilteredQuery(query9, connection, franchiseIds)
             ])
             .then((results) => {
                 let response = {};
@@ -386,7 +399,9 @@ const getReportDataByLocationName = (req, res) => {
             "fl.location_id IN (?) AND nhc.sale_date NOT REGEXP '0000-00-00' AND (nhc.sale_date BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.`location_name`";
         const query8 = "SELECT fl.location_id, SUM(nhc.commission_due) commissionTelemarketing FROM franchise_locations fl INNER JOIN `non-hcp_commissions` nhc ON fl.location_id = nhc.location WHERE " + 
             "fl.location_id IN (?) AND nhc.sale_date NOT REGEXP '0000-00-00' AND (nhc.sale_date BETWEEN '" + startDate + "' AND '" + endDate + "') AND nhc.role='Telemarketing' GROUP BY fl.`location_name`";
-
+        const query9 = "SELECT fl.location_id, SUM(bill.Expenses_Amount) operatingExpenses FROM `bill_dot_com_bills` bill INNER JOIN chart_of_accounts coa ON bill.Expenses_Account = coa.account_name " + 
+            "INNER JOIN franchise_locations fl ON bill.Expenses_Class = fl.location_name WHERE coa.type = 'Operating Expenses' AND fl.location_id IN (?) AND bill.Transaction_Date NOT REGEXP '0000-00-00' AND " +
+             "(bill.Transaction_Date BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.`location group`";
             Promise.all(
                 [
                     selectFilteredQuery(query1, connection, franchiseIds),
@@ -396,7 +411,8 @@ const getReportDataByLocationName = (req, res) => {
                     selectFilteredQuery(query5, connection, franchiseIds),
                     selectFilteredQuery(query6, connection, franchiseIds),
                     selectFilteredQuery(query7, connection, franchiseIds),
-                    selectFilteredQuery(query8, connection, franchiseIds)
+                    selectFilteredQuery(query8, connection, franchiseIds),
+                    selectFilteredQuery(query9, connection, franchiseIds)
                 ])
                 .then((results) => {
                     let response = {};
