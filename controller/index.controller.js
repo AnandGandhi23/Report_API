@@ -401,7 +401,7 @@ const getReportDataByLocationName = (req, res) => {
             "fl.location_id IN (?) AND nhc.sale_date NOT REGEXP '0000-00-00' AND (nhc.sale_date BETWEEN '" + startDate + "' AND '" + endDate + "') AND nhc.role='Telemarketing' GROUP BY fl.`location_name`";
         const query9 = "SELECT fl.location_id, SUM(bill.Expenses_Amount) operatingExpenses FROM `bill_dot_com_bills` bill INNER JOIN chart_of_accounts coa ON bill.Expenses_Account = coa.account_name " + 
             "INNER JOIN franchise_locations fl ON bill.Expenses_Class = fl.location_name WHERE coa.type = 'Operating Expenses' AND fl.location_id IN (?) AND bill.Transaction_Date NOT REGEXP '0000-00-00' AND " +
-             "(bill.Transaction_Date BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.`location group`";
+             "(bill.Transaction_Date BETWEEN '" + startDate + "' AND '" + endDate + "') GROUP BY fl.`location_name`";
             Promise.all(
                 [
                     selectFilteredQuery(query1, connection, franchiseIds),
