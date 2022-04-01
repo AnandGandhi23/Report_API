@@ -2,6 +2,7 @@ const express = require('express');
 const indexController = require('../controller/index.controller');
 const franchiseLocationController = require('../controller/franchise-location.controller');
 const authenticationController = require('../controller/authentication/authentication.controller');
+const balanceSheetController = require('../controller/balance-sheet.controller');
 const router = new express.Router();
 
 router.get('/getReportData', indexController.getReportData);
@@ -21,5 +22,10 @@ router.post('/getReportDataByLocationGroup', indexController.getReportDataByLoca
 router.post('/getReportDataByLocationName', indexController.getReportDataByLocationName);
 
 router.post('/authentication', authenticationController.authentication);
+
+router.post('/balance-sheet/getCashAndCashEq', balanceSheetController.getCashAndCashEq);
+
+router.post('/balance-sheet/getAccountsReceivables', balanceSheetController.getAccountsReceivables);
+
 
 module.exports = router;
