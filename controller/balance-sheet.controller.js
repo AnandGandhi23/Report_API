@@ -46,7 +46,7 @@ const getAccountsReceivables = (req, res) => {
 
         const query1 = "SELECT fl.franchise_id, SUM(sa.NetSales) as netPrice FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
             "fl.franchise_id IN (?) GROUP BY fl.franchise_name";
-        const query2 = "SELECT fl.franchise_id, SUM(st.NetSales) tax FROM franchise_locations fl INNER JOIN sales_tax st ON fl.location_id = st.Location WHERE " + 
+        const query2 = "SELECT fl.franchise_id, SUM(st.tax_amt) tax FROM franchise_locations fl INNER JOIN sales_tax st ON fl.location_id = st.Location WHERE " + 
             "fl.franchise_id IN (?) GROUP BY fl.franchise_name";
         const query3 = "SELECT fl.franchise_id, SUM(pe.Net_Sales) refund FROM franchise_locations fl INNER JOIN payments_everything pe ON fl.location_id = pe.Location WHERE " + 
             "fl.franchise_id IN (?) AND Net_Sales < 0 AND PaymentCreditType NOT REGEXP 'Donation' GROUP BY fl.franchise_name";
