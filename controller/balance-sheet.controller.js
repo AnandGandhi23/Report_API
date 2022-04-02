@@ -46,18 +46,21 @@ const getAccountsReceivables = (req, res) => {
 
         const query1 = "SELECT fl.franchise_id, SUM(sa.NetSales) as netPrice FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
             "fl.franchise_id IN (?) GROUP BY fl.franchise_name";
-        const query2 = "SELECT fl.franchise_id, SUM(pe.Net_Sales) refund FROM franchise_locations fl INNER JOIN payments_everything pe ON fl.location_id = pe.Location WHERE " + 
+        const query2 = "SELECT fl.franchise_id, SUM(st.NetSales) tax FROM franchise_locations fl INNER JOIN sales_tax st ON fl.location_id = st.Location WHERE " + 
+            "fl.franchise_id IN (?) GROUP BY fl.franchise_name";
+        const query3 = "SELECT fl.franchise_id, SUM(pe.Net_Sales) refund FROM franchise_locations fl INNER JOIN payments_everything pe ON fl.location_id = pe.Location WHERE " + 
             "fl.franchise_id IN (?) AND Net_Sales < 0 AND PaymentCreditType NOT REGEXP 'Donation' GROUP BY fl.franchise_name";
-        const query3 = "SELECT fl.franchise_id, SUM(pe.Net_Sales) amountPaid FROM franchise_locations fl INNER JOIN payments_everything pe ON fl.location_id = pe.Location WHERE " + 
+        const query4 = "SELECT fl.franchise_id, SUM(pe.Net_Sales) amountPaid FROM franchise_locations fl INNER JOIN payments_everything pe ON fl.location_id = pe.Location WHERE " + 
             "fl.franchise_id IN (?) AND Net_Sales > 0 AND PaymentCreditType NOT REGEXP 'Donation' GROUP BY fl.franchise_name";
-        const query4 = "SELECT fl.franchise_id, SUM(wo.writeoff_amount) writeOffs FROM franchise_locations fl INNER JOIN writeoffs wo ON fl.location_id = wo.Location WHERE " + 
+        const query5 = "SELECT fl.franchise_id, SUM(wo.writeoff_amount) writeOffs FROM franchise_locations fl INNER JOIN writeoffs wo ON fl.location_id = wo.Location WHERE " + 
             "fl.franchise_id IN (?) GROUP BY fl.franchise_name";
         Promise.all(
             [
                 runAccountsReceivablesQueries(query1, connection, franchiseIds),
                 runAccountsReceivablesQueries(query2, connection, franchiseIds),
                 runAccountsReceivablesQueries(query3, connection, franchiseIds),
-                runAccountsReceivablesQueries(query4, connection, franchiseIds)
+                runAccountsReceivablesQueries(query4, connection, franchiseIds),
+                runAccountsReceivablesQueries(query5, connection, franchiseIds)
             ])
             .then((results) => {
                 let response = {};
