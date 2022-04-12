@@ -34,7 +34,7 @@ const getCashAndCashEq = (req, res) => {
 };
 
 const getAccountsReceivables = (req, res) => {
-    console.log('getCashAndCashEq API called--')
+    console.log('getAccountsReceivables API called--')
     var franchiseIds = req.body.franchiseIds;
     console.log('franchiseIds', franchiseIds);
     
@@ -44,16 +44,19 @@ const getAccountsReceivables = (req, res) => {
             return; 
         }
 
-        const query1 = "SELECT fl.franchise_id, SUM(sa.NetSales) as netPrice FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE " + 
-            "fl.franchise_id IN (?) GROUP BY fl.franchise_name";
-        const query2 = "SELECT fl.franchise_id, SUM(st.tax_amt) tax FROM franchise_locations fl INNER JOIN sales_tax st ON fl.location_id = st.Location WHERE " + 
-            "fl.franchise_id IN (?) GROUP BY fl.franchise_name";
-        const query3 = "SELECT fl.franchise_id, SUM(pe.Net_Sales) refund FROM franchise_locations fl INNER JOIN payments_everything pe ON fl.location_id = pe.Location WHERE " + 
-            "fl.franchise_id IN (?) AND Net_Sales < 0 AND PaymentCreditType NOT REGEXP 'Donation' GROUP BY fl.franchise_name";
-        const query4 = "SELECT fl.franchise_id, SUM(pe.Net_Sales) amountPaid FROM franchise_locations fl INNER JOIN payments_everything pe ON fl.location_id = pe.Location WHERE " + 
-            "fl.franchise_id IN (?) AND Net_Sales > 0 AND PaymentCreditType NOT REGEXP 'Donation' GROUP BY fl.franchise_name";
-        const query5 = "SELECT fl.franchise_id, SUM(wo.writeoff_amount) writeOffs FROM franchise_locations fl INNER JOIN writeoffs wo ON fl.location_id = wo.Location WHERE " + 
-            "fl.franchise_id IN (?) GROUP BY fl.franchise_name";
+        var invoiceCreationDate = req.query.startDate;
+        console.log('invoiceCreationDate----', invoiceCreationDate);
+
+        const query1 = `SELECT fl.franchise_id, SUM(sa.NetSales) as netPrice FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE ` + 
+            `fl.franchise_id IN (?) AND sa.InvoiceCreationDate > '${invoiceCreationDate}' GROUP BY fl.franchise_name`;
+        const query2 = `SELECT fl.franchise_id, SUM(st.tax_amt) tax FROM franchise_locations fl INNER JOIN sales_tax st ON fl.location_id = st.Location WHERE ` + 
+            `fl.franchise_id IN (?) AND st.InvoiceCreationDate > '${invoiceCreationDate}' GROUP BY fl.franchise_name`;
+        const query3 = `SELECT fl.franchise_id, SUM(pe.Net_Sales) refund FROM franchise_locations fl INNER JOIN payments_everything pe ON fl.location_id = pe.Location WHERE ` + 
+            `fl.franchise_id IN (?) AND pe.InvoiceCreationDate > '${invoiceCreationDate}' AND Net_Sales < 0 AND PaymentCreditType NOT REGEXP 'Donation' GROUP BY fl.franchise_name`;
+        const query4 = `SELECT fl.franchise_id, SUM(pe.Net_Sales) amountPaid FROM franchise_locations fl INNER JOIN payments_everything pe ON fl.location_id = pe.Location WHERE ` + 
+            `fl.franchise_id IN (?) AND pe.InvoiceCreationDate > '${invoiceCreationDate}' AND Net_Sales > 0 AND PaymentCreditType NOT REGEXP 'Donation' GROUP BY fl.franchise_name`;
+        const query5 = `SELECT fl.franchise_id, SUM(wo.writeoff_amount) writeOffs FROM franchise_locations fl INNER JOIN writeoffs wo ON fl.location_id = wo.Location WHERE ` + 
+            `fl.franchise_id IN (?) GROUP BY fl.franchise_name`;
         Promise.all(
             [
                 runAccountsReceivablesQueries(query1, connection, franchiseIds),
