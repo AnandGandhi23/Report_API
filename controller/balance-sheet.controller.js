@@ -44,18 +44,20 @@ const getAccountsReceivables = (req, res) => {
             return; 
         }
 
-        var invoiceCreationDate = req.query.startDate;
+        var invoiceCreationDate = req.query.invoiceCreationDate;
         console.log('invoiceCreationDate----', invoiceCreationDate);
 
         const query1 = `SELECT fl.franchise_id, SUM(sa.NetSales) as netPrice FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE ` + 
-            `fl.franchise_id IN (?) AND sa.InvoiceCreationDate > '${invoiceCreationDate}' GROUP BY fl.franchise_name`;
+            `fl.franchise_id IN (?) AND sa.InvoiceCreationDate > '2015-01-01' AND sa.InvoiceCreationDate <= '${invoiceCreationDate}' GROUP BY fl.franchise_name`;
         const query2 = `SELECT fl.franchise_id, SUM(st.tax_amt) tax FROM franchise_locations fl INNER JOIN sales_tax st ON fl.location_id = st.Location WHERE ` + 
-            `fl.franchise_id IN (?) AND st.InvoiceCreationDate > '${invoiceCreationDate}' GROUP BY fl.franchise_name`;
+            `fl.franchise_id IN (?) AND st.InvoiceCreationDate > '2015-01-01' AND st.InvoiceCreationDate <= '${invoiceCreationDate}' GROUP BY fl.franchise_name`;
         const query3 = `SELECT fl.franchise_id, SUM(pe.Net_Sales) refund FROM franchise_locations fl INNER JOIN payments_everything pe ON fl.location_id = pe.Location WHERE ` + 
-            `fl.franchise_id IN (?) AND pe.InvoiceCreationDate > '${invoiceCreationDate}' AND Net_Sales < 0 AND PaymentCreditType NOT REGEXP 'Donation' GROUP BY fl.franchise_name`;
-        const query4 = `SELECT fl.franchise_id, SUM(pe.Net_Sales) amountPaid FROM franchise_locations fl INNER JOIN payments_everything pe ON fl.location_id = pe.Location WHERE ` + 
-            `fl.franchise_id IN (?) AND pe.InvoiceCreationDate > '${invoiceCreationDate}' AND Net_Sales > 0 AND PaymentCreditType NOT REGEXP 'Donation' GROUP BY fl.franchise_name`;
-        const query5 = `SELECT fl.franchise_id, SUM(wo.writeoff_amount) writeOffs FROM franchise_locations fl INNER JOIN writeoffs wo ON fl.location_id = wo.Location WHERE ` + 
+            `fl.franchise_id IN (?) AND pe.InvoiceCreationDate > '2015-01-01' AND pe.InvoiceCreationDate <= '${invoiceCreationDate}' AND Net_Sales < 0 AND PaymentCreditType NOT REGEXP 'Donation' GROUP BY fl.franchise_name`;
+        const query4 = `SELECT fl.franchise_id, SUM(pe.Net_Sales) donation FROM franchise_locations fl INNER JOIN payments_everything pe ON fl.location_id = pe.Location WHERE ` + 
+            `fl.franchise_id IN (?) AND pe.InvoiceCreationDate > '2015-01-01' AND pe.InvoiceCreationDate <= '${invoiceCreationDate}' AND PaymentCreditType REGEXP 'Donation' GROUP BY fl.franchise_name`;
+        const query5 = `SELECT fl.franchise_id, SUM(pe.Net_Sales) amountPaid FROM franchise_locations fl INNER JOIN payments_everything pe ON fl.location_id = pe.Location WHERE ` + 
+            `fl.franchise_id IN (?) AND pe.InvoiceCreationDate > '2015-01-01' AND pe.InvoiceCreationDate <= '${invoiceCreationDate}' AND Net_Sales > 0 AND PaymentCreditType NOT REGEXP 'Donation' GROUP BY fl.franchise_name`;
+        const query6 = `SELECT fl.franchise_id, SUM(wo.writeoff_amount) writeOffs FROM franchise_locations fl INNER JOIN writeoffs wo ON fl.location_id = wo.Location WHERE ` + 
             `fl.franchise_id IN (?) GROUP BY fl.franchise_name`;
         Promise.all(
             [
@@ -63,7 +65,9 @@ const getAccountsReceivables = (req, res) => {
                 runAccountsReceivablesQueries(query2, connection, franchiseIds),
                 runAccountsReceivablesQueries(query3, connection, franchiseIds),
                 runAccountsReceivablesQueries(query4, connection, franchiseIds),
-                runAccountsReceivablesQueries(query5, connection, franchiseIds)
+                runAccountsReceivablesQueries(query5, connection, franchiseIds),
+                runAccountsReceivablesQueries(query6, connection, franchiseIds)
+
             ])
             .then((results) => {
                 let response = {};
@@ -82,6 +86,7 @@ const getAccountsReceivables = (req, res) => {
                         });
                     });
                 });
+                console.log('response---', response);
                 res.send(JSON.stringify(response)); 
             })
     })
