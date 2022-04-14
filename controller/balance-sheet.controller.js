@@ -60,8 +60,8 @@ const getAccountsReceivables = (req, res) => {
             `fl.franchise_id IN (?) AND pe.InvoiceCreationDate > '2015-01-01' AND pe.InvoiceCreationDate <= '${invoiceCreationDate}' AND PaymentCreditType REGEXP 'Donation' GROUP BY fl.franchise_name`;
         const query5 = `SELECT fl.franchise_id, SUM(pe.Net_Sales) amountPaid FROM franchise_locations fl INNER JOIN payments_everything pe ON fl.location_id = pe.Location WHERE ` + 
             `fl.franchise_id IN (?) AND pe.InvoiceCreationDate > '2015-01-01' AND pe.InvoiceCreationDate <= '${invoiceCreationDate}' AND Net_Sales > 0 AND PaymentCreditType NOT REGEXP 'Donation' GROUP BY fl.franchise_name`;
-        const query6 = `SELECT fl.franchise_id, SUM(wo.writeoff_amount) writeOffs FROM franchise_locations fl INNER JOIN writeoffs wo ON fl.location_id = wo.Location WHERE ` + 
-            `fl.franchise_id IN (?) GROUP BY fl.franchise_name`;
+        const query6 = `SELECT fl.franchise_id, SUM(wo.writeoff_amount) writeOffs FROM franchise_locations fl INNER JOIN writeoffs wo ON fl.location_id = wo.Location INNER JOIN sales_actual sa ON concat(wo.Location,wo.InvoiceNo) = sa.SaleId WHERE ` + 
+            `fl.franchise_id IN (?) AND sa.InvoiceCreationDate > '2015-01-01' AND sa.InvoiceCreationDate <= '${invoiceCreationDate}' GROUP BY fl.franchise_name`;
         Promise.all(
             [
                 runAccountsReceivablesQueries(query1, connection, franchiseIds),
