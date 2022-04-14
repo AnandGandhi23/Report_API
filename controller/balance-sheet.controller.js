@@ -15,7 +15,7 @@ const getCashAndCashEq = (req, res) => {
         console.log('invoiceCreationDate----', invoiceCreationDate);
 
         const sqlQuery = `SELECT fl.franchise_id, SUM(sa.NetSales) as cashAndCashEq FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE ` + 
-            `fl.franchise_id IN (?) AND AND sa.InvoiceCreationDate > '2015-01-01' AND sa.InvoiceCreationDate <= '${invoiceCreationDate}' GROUP BY fl.franchise_name`;
+            `fl.franchise_id IN (?) AND sa.InvoiceCreationDate > '2015-01-01' AND sa.InvoiceCreationDate <= '${invoiceCreationDate}' GROUP BY fl.franchise_name`;
         
         connection.query(sqlQuery, [franchiseIds], function(err, results) {
             connection.release();
