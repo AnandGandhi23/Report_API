@@ -29,6 +29,7 @@ const getCashAndCashEq = (req, res) => {
                 const jsonResponse = JSON.parse(strResponse);
 
                 const response = {};
+                console.log('json Response--', jsonResponse);
                 jsonResponse.map((data) => {
                     response[data['franchise_id']] = {endingBankBalance: data['endingBankBalance']};
                 });
