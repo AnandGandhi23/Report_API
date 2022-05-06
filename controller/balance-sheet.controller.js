@@ -14,8 +14,12 @@ const getCashAndCashEq = (req, res) => {
         var invoiceCreationDate = req.query.invoiceCreationDate;
         console.log('invoiceCreationDate----', invoiceCreationDate);
 
-        const sqlQuery = `SELECT fl.franchise_id, SUM(sa.NetSales) as cashAndCashEq FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE ` + 
-            `fl.franchise_id IN (?) AND sa.InvoiceCreationDate > '2015-01-01' AND sa.InvoiceCreationDate <= '${invoiceCreationDate}' GROUP BY fl.franchise_name`;
+        // SELECT franchise_id, balance FROM `wafed_bankchecking` where uniqueID IN (SELECT MAX(uniqueID) from `wafed_bankchecking` WHERE franchise_id = 'CF0114') 
+
+        const sqlQuery = `SELECT franchise_id, balance as endingBankBalance FROM wafed_bankchecking where uniqueID IN (SELECT MAX(uniqueID) from wafed_bankchecking WHERE franchise_id IN (?) AND entryDate > '2015-01-01' AND entryDate <= '${invoiceCreationDate}')`;
+
+        // const sqlQuery = `SELECT fl.franchise_id, SUM(sa.NetSales) as cashAndCashEq FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE ` + 
+        //     `fl.franchise_id IN (?) AND sa.InvoiceCreationDate > '2015-01-01' AND sa.InvoiceCreationDate <= '${invoiceCreationDate}' GROUP BY fl.franchise_name`;
         
         connection.query(sqlQuery, [franchiseIds], function(err, results) {
             connection.release();
@@ -26,7 +30,7 @@ const getCashAndCashEq = (req, res) => {
 
                 const response = {};
                 jsonResponse.map((data) => {
-                    response[data['franchise_id']] = data['cashAndCashEq'];
+                    response[data['franchise_id']] = {endingBankBalance: data['endingBankBalance']};
                 });
                 res.send(JSON.stringify(response));
             }   else{
