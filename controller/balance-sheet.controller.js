@@ -16,7 +16,7 @@ const getCashAndCashEq = (req, res) => {
 
         // SELECT franchise_id, balance FROM `wafed_bankchecking` where uniqueID IN (SELECT MAX(uniqueID) from `wafed_bankchecking` WHERE franchise_id = 'CF0114') 
 
-        const sqlQuery = `SELECT franchise_id, balance as endingBankBalance FROM wafed_bankchecking where uniqueID IN (SELECT MAX(uniqueID) from wafed_bankchecking WHERE franchise_id IN (?) AND entryDate > '2015-01-01' AND entryDate <= '${invoiceCreationDate}')`;
+        const sqlQuery = `SELECT franchise_id, balance as endingBankBalance FROM wafed_bankchecking where uniqueID IN (SELECT MAX(uniqueID) from wafed_bankchecking WHERE entryDate > '2015-01-01' AND entryDate <= '${invoiceCreationDate}') GROUP BY franchise_id HAVING franchise_id IN (?)`;
 
         // const sqlQuery = `SELECT fl.franchise_id, SUM(sa.NetSales) as cashAndCashEq FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE ` + 
         //     `fl.franchise_id IN (?) AND sa.InvoiceCreationDate > '2015-01-01' AND sa.InvoiceCreationDate <= '${invoiceCreationDate}' GROUP BY fl.franchise_name`;
