@@ -16,28 +16,56 @@ const getCashAndCashEq = (req, res) => {
 
         // SELECT franchise_id, balance FROM `wafed_bankchecking` where uniqueID IN (SELECT MAX(uniqueID) from `wafed_bankchecking` WHERE franchise_id = 'CF0114') 
 
-        const sqlQuery = `SELECT franchise_id, balance as endingBankBalance FROM wafed_bankchecking where uniqueID IN (SELECT MAX(uniqueID) from wafed_bankchecking WHERE entryDate > '2015-01-01' AND entryDate <= '${invoiceCreationDate}' GROUP BY franchise_id HAVING franchise_id IN (?))`;
-
+        const sqlQuery1 = `SELECT franchise_id, balance as endingBankBalance FROM wafed_bankchecking where uniqueID IN (SELECT MAX(uniqueID) from wafed_bankchecking WHERE entryDate > '2015-01-01' AND entryDate <= '${invoiceCreationDate}' GROUP BY franchise_id HAVING franchise_id IN (?))`;
+        const sqlQuery2 = `SELECT p.franchise_id, SUM(p.Expenses_Amount) - SUM(b.debit) nclearedCheck FROM bill_dot_com_payments p INNER JOIN wafed_bankchecking b `+
+            `ON b.description REGEXP p.RefNumber AND p.franchise_id = b.franchise_id WHERE payment_method = 'Check' AND p.franchise_id in (?) AND p.EntryDate > '2015-01-01' AND p.EntryDate <= '${invoiceCreationDate}' GROUP BY p.franchise_id`;
         // const sqlQuery = `SELECT fl.franchise_id, SUM(sa.NetSales) as cashAndCashEq FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE ` + 
         //     `fl.franchise_id IN (?) AND sa.InvoiceCreationDate > '2015-01-01' AND sa.InvoiceCreationDate <= '${invoiceCreationDate}' GROUP BY fl.franchise_name`;
         
-        connection.query(sqlQuery, [franchiseIds], function(err, results) {
-            connection.release();
-            if (!err) {
-                
+        Promise.all(
+            [
+                runSQLQueries(sqlQuery1, connection, franchiseIds),
+                runSQLQueries(sqlQuery2, connection, franchiseIds),
+            ])
+            .then((results) => {
+                let response = {};
                 const strResponse = JSON.stringify(results);
                 const jsonResponse = JSON.parse(strResponse);
-
-                const response = {};
-                console.log('json Response--', jsonResponse);
+                
                 jsonResponse.map((data) => {
-                    response[data['franchise_id']] = {endingBankBalance: data['endingBankBalance']};
+                    Array.from(data).forEach(obj => {
+                        Object.keys(obj).forEach(key => {
+                            if (key !== 'franchise_id') {
+                                if (!response[`${obj['franchise_id']}`]) {
+                                    response[`${obj['franchise_id']}`] = {};
+                                }
+                                response[`${obj['franchise_id']}`][key] = obj[key];
+                            }
+                        });
+                    });
                 });
-                res.send(JSON.stringify(response));
-            }   else{
-                console.log('Error while performing query to get cash and cash equivalents', err);
-            }
-        });
+                console.log('response---', response);
+                res.send(JSON.stringify(response)); 
+            })
+
+
+        // connection.query(sqlQuery, [franchiseIds], function(err, results) {
+        //     connection.release();
+        //     if (!err) {
+                
+        //         const strResponse = JSON.stringify(results);
+        //         const jsonResponse = JSON.parse(strResponse);
+
+        //         const response = {};
+        //         console.log('json Response--', jsonResponse);
+        //         jsonResponse.map((data) => {
+        //             response[data['franchise_id']] = {endingBankBalance: data['endingBankBalance']};
+        //         });
+        //         res.send(JSON.stringify(response));
+        //     }   else{
+        //         console.log('Error while performing query to get cash and cash equivalents', err);
+        //     }
+        // });
     })
 };
 
@@ -70,12 +98,12 @@ const getAccountsReceivables = (req, res) => {
         console.log('query--', query6);
             Promise.all(
             [
-                runAccountsReceivablesQueries(query1, connection, franchiseIds),
-                runAccountsReceivablesQueries(query2, connection, franchiseIds),
-                runAccountsReceivablesQueries(query3, connection, franchiseIds),
-                runAccountsReceivablesQueries(query4, connection, franchiseIds),
-                runAccountsReceivablesQueries(query5, connection, franchiseIds),
-                // runAccountsReceivablesQueries(query6, connection, franchiseIds)
+                runSQLQueries(query1, connection, franchiseIds),
+                runSQLQueries(query2, connection, franchiseIds),
+                runSQLQueries(query3, connection, franchiseIds),
+                runSQLQueries(query4, connection, franchiseIds),
+                runSQLQueries(query5, connection, franchiseIds),
+                // runSQLQueries(query6, connection, franchiseIds)
 
             ])
             .then((results) => {
@@ -101,7 +129,7 @@ const getAccountsReceivables = (req, res) => {
     })
 };
 
-async function runAccountsReceivablesQueries(sqlquery, connection, franchiseIds){
+async function runSQLQueries(sqlquery, connection, franchiseIds){
     return new Promise((resolve, reject) => {
         connection.query(sqlquery, [franchiseIds], (err,result)=>{
             if(err){
