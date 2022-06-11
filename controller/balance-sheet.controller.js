@@ -47,25 +47,6 @@ const getCashAndCashEq = (req, res) => {
                 console.log('response---', response);
                 res.send(JSON.stringify(response)); 
             })
-
-
-        // connection.query(sqlQuery, [franchiseIds], function(err, results) {
-        //     connection.release();
-        //     if (!err) {
-                
-        //         const strResponse = JSON.stringify(results);
-        //         const jsonResponse = JSON.parse(strResponse);
-
-        //         const response = {};
-        //         console.log('json Response--', jsonResponse);
-        //         jsonResponse.map((data) => {
-        //             response[data['franchise_id']] = {endingBankBalance: data['endingBankBalance']};
-        //         });
-        //         res.send(JSON.stringify(response));
-        //     }   else{
-        //         console.log('Error while performing query to get cash and cash equivalents', err);
-        //     }
-        // });
     })
 };
 
@@ -129,6 +110,29 @@ const getAccountsReceivables = (req, res) => {
     })
 };
 
+const getDebitedValues = (req, res) => {
+    db.getConnection((err, connection) => {
+        if(err) { 
+            console.log(err); 
+            return; 
+        }
+
+        var franchiseIds = req.body.franchiseIds;
+        var invoiceCreationDate = req.query.invoiceCreationDate;
+
+        const sqlQuery =
+        `SELECT date_posted as date, debit as amount, check_number as type, description as name FROM wafed_bankchecking WHERE AND debit > 0 franchise_id = ${franchiseIds} AND date_posted > '2015-01-01' AND date_posted <= '${invoiceCreationDate}'`;
+        connection.query(sqlQuery, function(err, results) {
+            connection.release();
+            if (!err) {
+                res.send(JSON.stringify(results));
+            }   else{
+                console.log('Error while performing query to get debited values', err);
+            }
+        });
+    })
+};
+
 async function runSQLQueries(sqlquery, connection, franchiseIds){
     return new Promise((resolve, reject) => {
         connection.query(sqlquery, [franchiseIds], (err,result)=>{
@@ -145,5 +149,6 @@ async function runSQLQueries(sqlquery, connection, franchiseIds){
 
 module.exports = {
     getCashAndCashEq,
-    getAccountsReceivables
+    getAccountsReceivables,
+    getDebitedValues
 }

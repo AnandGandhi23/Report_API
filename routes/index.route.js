@@ -27,5 +27,6 @@ router.post('/balance-sheet/getCashAndCashEq', balanceSheetController.getCashAnd
 
 router.post('/balance-sheet/getAccountsReceivables', balanceSheetController.getAccountsReceivables);
 
+router.post('/balance-sheet/getDebitedValues', balanceSheetController.getDebitedValues);
 
 module.exports = router;
