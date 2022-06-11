@@ -111,7 +111,7 @@ const getAccountsReceivables = (req, res) => {
 };
 
 const getDebitedValues = (req, res) => {
-    
+    console.log('getDebitedValues API called---');
     db.getConnection((err, connection) => {
         if(err) { 
             console.log(err); 
@@ -124,8 +124,10 @@ const getDebitedValues = (req, res) => {
         const sqlQuery =
         `SELECT date_posted as date, debit as amount, check_number as type, description as name FROM wafed_bankchecking WHERE debit > 0 AND franchise_id = '${franchiseIds}' AND date_posted > '2015-01-01' AND date_posted <= '${invoiceCreationDate}'`;
         connection.query(sqlQuery, function(err, results) {
+            console.log('query--', sqlQuery);
             connection.release();
             if (!err) {
+                console.log('response----', JSON.stringify(results));
                 res.send(JSON.stringify(results));
             }   else{
                 console.log('Error while performing query to get debited values', err);
