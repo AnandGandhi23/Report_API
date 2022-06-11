@@ -122,7 +122,7 @@ const getDebitedValues = (req, res) => {
         var invoiceCreationDate = req.query.invoiceCreationDate;
 
         const sqlQuery =
-        `SELECT date_posted as date, debit as amount, check_number as type, description as name FROM wafed_bankchecking WHERE debit > 0 AND franchise_id = ${franchiseIds} AND date_posted > '2015-01-01' AND date_posted <= '${invoiceCreationDate}'`;
+        `SELECT date_posted as date, debit as amount, check_number as type, description as name FROM wafed_bankchecking WHERE debit > 0 AND franchise_id = '${franchiseIds}' AND date_posted > '2015-01-01' AND date_posted <= '${invoiceCreationDate}'`;
         connection.query(sqlQuery, function(err, results) {
             connection.release();
             if (!err) {
