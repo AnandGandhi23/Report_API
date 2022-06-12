@@ -160,6 +160,32 @@ const getCreditedValues = (req, res) => {
     })
 };
 
+const getUnusedCheckValues = (req, res) => {
+    console.log('getUnusedCheckValues API called---');
+    db.getConnection((err, connection) => {
+        if(err) { 
+            console.log(err); 
+            return; 
+        }
+
+        var franchiseIds = req.body.franchiseIds;
+        var invoiceCreationDate = req.query.invoiceCreationDate;
+
+        const sqlQuery =
+        `SELECT * FROM bill_dot_com_payments p INNER JOIN wafed_bankchecking b ON b.description REGEXP p.RefNumber AND p.franchise_id = b.franchise_id WHERE payment_method = 'Check' AND p.franchise_id = '${franchiseIds}' AND p.EntryDate > '2015-01-01' AND p.EntryDate <= '${invoiceCreationDate}'`;
+        
+        connection.query(sqlQuery, function(err, results) {
+            console.log('query--', sqlQuery);
+            connection.release();
+            if (!err) {
+                res.send(JSON.stringify(results));
+            }   else{
+                console.log('Error while performing query to get debited values', err);
+            }
+        });
+    })
+};
+
 async function runSQLQueries(sqlquery, connection, franchiseIds){
     return new Promise((resolve, reject) => {
         connection.query(sqlquery, [franchiseIds], (err,result)=>{
@@ -178,5 +204,6 @@ module.exports = {
     getCashAndCashEq,
     getAccountsReceivables,
     getDebitedValues,
-    getCreditedValues
+    getCreditedValues,
+    getUnusedCheckValues
 }

@@ -31,5 +31,6 @@ router.post('/balance-sheet/getDebitedValues', balanceSheetController.getDebited
 
 router.post('/balance-sheet/getCreditedValues', balanceSheetController.getCreditedValues);
 
+router.post('/balance-sheet/getUnusedCheckValues', balanceSheetController.getUnusedCheckValues);
 
 module.exports = router;
