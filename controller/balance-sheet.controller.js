@@ -172,7 +172,7 @@ const getUnusedCheckValues = (req, res) => {
         var invoiceCreationDate = req.query.invoiceCreationDate;
 
         const sqlQuery =
-        `SELECT * FROM bill_dot_com_payments p INNER JOIN wafed_bankchecking b ON b.description REGEXP p.RefNumber AND p.franchise_id = b.franchise_id WHERE payment_method = 'Check' AND p.franchise_id = '${franchiseIds}' AND p.EntryDate > '2015-01-01' AND p.EntryDate <= '${invoiceCreationDate}'`;
+        `SELECT p.EntryDate as date, debit as amount, payment_method as type, vendorName as name FROM bill_dot_com_payments p INNER JOIN wafed_bankchecking b ON b.description REGEXP p.RefNumber AND p.franchise_id = b.franchise_id WHERE payment_method = 'Check' AND p.franchise_id = '${franchiseIds}' AND p.EntryDate > '2015-01-01' AND p.EntryDate <= '${invoiceCreationDate}'`;
         
         connection.query(sqlQuery, function(err, results) {
             console.log('query--', sqlQuery);
