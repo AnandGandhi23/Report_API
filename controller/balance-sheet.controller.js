@@ -177,5 +177,6 @@ async function runSQLQueries(sqlquery, connection, franchiseIds){
 module.exports = {
     getCashAndCashEq,
     getAccountsReceivables,
-    getDebitedValues
+    getDebitedValues,
+    getCreditedValues
 }

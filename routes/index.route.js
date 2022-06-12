@@ -29,4 +29,7 @@ router.post('/balance-sheet/getAccountsReceivables', balanceSheetController.getA
 
 router.post('/balance-sheet/getDebitedValues', balanceSheetController.getDebitedValues);
 
+router.post('/balance-sheet/getCreditedValues', balanceSheetController.getCreditedValues);
+
+
 module.exports = router;
