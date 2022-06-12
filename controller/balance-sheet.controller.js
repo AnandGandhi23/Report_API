@@ -127,7 +127,31 @@ const getDebitedValues = (req, res) => {
             console.log('query--', sqlQuery);
             connection.release();
             if (!err) {
-                console.log('response----', JSON.stringify(results));
+                res.send(JSON.stringify(results));
+            }   else{
+                console.log('Error while performing query to get debited values', err);
+            }
+        });
+    })
+};
+
+const getCreditedValues = (req, res) => {
+    console.log('getCreditedValues API called---');
+    db.getConnection((err, connection) => {
+        if(err) { 
+            console.log(err); 
+            return; 
+        }
+
+        var franchiseIds = req.body.franchiseIds;
+        var invoiceCreationDate = req.query.invoiceCreationDate;
+
+        const sqlQuery =
+        `SELECT date_posted as date, credit as amount, check_number as type, description as name FROM wafed_bankchecking WHERE credit > 0 AND franchise_id = '${franchiseIds}' AND date_posted > '2015-01-01' AND date_posted <= '${invoiceCreationDate}'`;
+        connection.query(sqlQuery, function(err, results) {
+            console.log('query--', sqlQuery);
+            connection.release();
+            if (!err) {
                 res.send(JSON.stringify(results));
             }   else{
                 console.log('Error while performing query to get debited values', err);
