@@ -17,10 +17,11 @@ const getCashAndCashEq = (req, res) => {
         // SELECT franchise_id, balance FROM `wafed_bankchecking` where uniqueID IN (SELECT MAX(uniqueID) from `wafed_bankchecking` WHERE franchise_id = 'CF0114') 
 
         const sqlQuery1 = `SELECT franchise_id, balance as endingBankBalance FROM wafed_bankchecking where uniqueID IN (SELECT MAX(uniqueID) from wafed_bankchecking WHERE entryDate > '2015-01-01' AND entryDate <= '${invoiceCreationDate}' GROUP BY franchise_id HAVING franchise_id IN (?))`;
-        const sqlQuery2 = `SELECT p.franchise_id, SUM(p.Expenses_Amount) - SUM(b.debit) unclearedCheck FROM bill_dot_com_payments p INNER JOIN wafed_bankchecking b `+
-            `ON b.description REGEXP p.RefNumber AND p.franchise_id = b.franchise_id WHERE payment_method = 'Check' AND p.franchise_id in (?) AND p.EntryDate > '2015-01-01' AND p.EntryDate <= '${invoiceCreationDate}' GROUP BY p.franchise_id`;
+        const sqlQuery2 = `SELECT p.franchise_id, SUM(p.Expenses_Amount) - SUM(b.debit) unclearedCheck FROM (SELECT p.franchise_id, p.RefNumber, SUM(p.Expenses_Amount) Expenses_Amount FROM bill_dot_com_payments p WHERE p.payment_method = 'Check' AND p.franchise_id in (?) AND ` +
+            `p.Transaction_Date > '2015-01-01' AND p.Transaction_Date <= '${invoiceCreationDate}' GROUP BY p.franchise_id, p.RefNumber) p INNER JOIN wafed_bankchecking b ON b.description REGEXP p.RefNumber AND p.franchise_id = b.franchise_id GROUP BY p.franchise_id HAVING SUM(p.Expenses_Amount) <> SUM(b.debit)`;
         // const sqlQuery = `SELECT fl.franchise_id, SUM(sa.NetSales) as cashAndCashEq FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE ` + 
         //     `fl.franchise_id IN (?) AND sa.InvoiceCreationDate > '2015-01-01' AND sa.InvoiceCreationDate <= '${invoiceCreationDate}' GROUP BY fl.franchise_name`;
+        
         
         Promise.all(
             [
@@ -165,15 +166,17 @@ const getUnusedCheckValues = (req, res) => {
     db.getConnection((err, connection) => {
         if(err) { 
             console.log(err); 
-            return; 
+            return; 1
+
         }
 
         var franchiseIds = req.body.franchiseIds;
         var invoiceCreationDate = req.query.invoiceCreationDate;
 
         const sqlQuery =
-        `SELECT p.EntryDate as date, debit as amount, payment_method as type, vendorName as name, bill_id as num FROM bill_dot_com_payments p INNER JOIN wafed_bankchecking b ON b.description REGEXP p.RefNumber AND p.franchise_id = b.franchise_id WHERE payment_method = 'Check' AND p.franchise_id = '${franchiseIds}' AND p.EntryDate > '2015-01-01' AND p.EntryDate <= '${invoiceCreationDate}'`;
-        
+        `SELECT p.Transaction_Date as date, p.payment_method as type, p.vendorName as name, p.bill_id as num, p.Expenses_Amount as amount FROM bill_dot_com_payments p INNER JOIN (SELECT p.franchise_id, p.RefNumber, SUM(p.Expenses_Amount) - SUM(b.debit) unclearedCheck FROM (SELECT p.franchise_id, p.RefNumber, SUM(p.Expenses_Amount) Expenses_Amount FROM ` +
+            `bill_dot_com_payments p WHERE p.payment_method = 'Check' AND p.franchise_id = '${franchiseIds}' AND p.Transaction_Date > '2015-01-01' AND p.Transaction_Date <= '${invoiceCreationDate}' GROUP BY p.franchise_id, p.RefNumber) p INNER JOIN wafed_bankchecking b ON b.description REGEXP p.RefNumber  AND p.franchise_id = b.franchise_id GROUP BY p.franchise_id, p.RefNumber HAVING SUM(p.Expenses_Amount) <> SUM(b.debit)) ps ON p.franchise_id = ps.franchise_id AND p.RefNumber = ps.RefNumber`;    
+
         connection.query(sqlQuery, function(err, results) {
             console.log('query--', sqlQuery);
             connection.release();
