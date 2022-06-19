@@ -23,17 +23,18 @@ const getCashAndCashEq = (req, res) => {
         // const sqlQuery = `SELECT fl.franchise_id, SUM(sa.NetSales) as cashAndCashEq FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE ` + 
         //     `fl.franchise_id IN (?) AND sa.InvoiceCreationDate > '2015-01-01' AND sa.InvoiceCreationDate <= '${invoiceCreationDate}' GROUP BY fl.franchise_name`;
         
-        
         Promise.all(
             [
                 runSQLQueries(sqlQuery1, connection, franchiseIds),
                 runSQLQueries(sqlQuery2, connection, franchiseIds),
             ])
             .then((results) => {
+
                 let response = {};
                 const strResponse = JSON.stringify(results);
                 const jsonResponse = JSON.parse(strResponse);
                 
+                console.log('jsonResponse----', jsonResponse);
                 jsonResponse.map((data) => {
                     Array.from(data).forEach(obj => {
                         Object.keys(obj).forEach(key => {
@@ -53,9 +54,9 @@ const getCashAndCashEq = (req, res) => {
 };
 
 const getAccountsReceivables = (req, res) => {
-    console.log('getAccountsReceivables API called--')
+    // console.log('getAccountsReceivables API called--')
     var franchiseIds = req.body.franchiseIds;
-    console.log('franchiseIds', franchiseIds);
+    // console.log('franchiseIds', franchiseIds);
     
     db.getConnection((err, connection) => {
         if(err) { 
@@ -64,7 +65,7 @@ const getAccountsReceivables = (req, res) => {
         }
 
         var invoiceCreationDate = req.query.invoiceCreationDate;
-        console.log('invoiceCreationDate----', invoiceCreationDate);
+        // console.log('invoiceCreationDate----', invoiceCreationDate);
 
         const query1 = `SELECT fl.franchise_id, SUM(sa.NetSales) as netPrice FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE ` + 
             `fl.franchise_id IN (?) AND sa.InvoiceCreationDate > '2015-01-01' AND sa.InvoiceCreationDate <= '${invoiceCreationDate}' GROUP BY fl.franchise_name`;
@@ -106,7 +107,7 @@ const getAccountsReceivables = (req, res) => {
                         });
                     });
                 });
-                console.log('response---', response);
+                // console.log('response---', response);
                 res.send(JSON.stringify(response)); 
             })
     })
