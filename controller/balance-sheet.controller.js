@@ -16,12 +16,12 @@ const getCashAndCashEq = (req, res) => {
 
         // SELECT franchise_id, balance FROM `wafed_bankchecking` where uniqueID IN (SELECT MAX(uniqueID) from `wafed_bankchecking` WHERE franchise_id = 'CF0114') 
 
-        const sqlQuery1 = `SELECT franchise_id, balance as endingBankBalance FROM wafed_bankchecking WHERE date_posted > '2015-01-01' AND date_posted <= '${invoiceCreationDate}' AND franchise_id in (?) ` +
-        `ORDER BY wafed_bankchecking.date_posted  DESC, uniqueID DESC LIMIT 1;`;
+        const sqlQuery1 = `SELECT franchise_id, balance AS endingBankBalance FROM wafed_bankchecking WHERE uniqueID IN( SELECT MAX(uniqueID) FROM wafed_bankchecking wb INNER JOIN(SELECT franchise_id, MAX(date_posted) date_posted FROM wafed_bankchecking WHERE date_posted > '2015-01-01' AND date_posted <= '${invoiceCreationDate}' GROUP BY franchise_id HAVING franchise_id IN(?)) wbdp ON wb.franchise_id = wbdp.franchise_id AND wb.date_posted = wbdp.date_posted GROUP BY wb.franchise_id);`;
         const sqlQuery2 = `SELECT p.franchise_id, SUM(p.Expenses_Amount) - SUM(b.debit) unclearedCheck FROM (SELECT p.franchise_id, p.RefNumber, SUM(p.Expenses_Amount) Expenses_Amount FROM bill_dot_com_payments p WHERE p.payment_method = 'Check' AND p.franchise_id in (?) AND ` +
             `p.Transaction_Date > '2015-01-01' AND p.Transaction_Date <= '${invoiceCreationDate}' GROUP BY p.franchise_id, p.RefNumber) p INNER JOIN wafed_bankchecking b ON b.description REGEXP p.RefNumber AND p.franchise_id = b.franchise_id GROUP BY p.franchise_id HAVING SUM(p.Expenses_Amount) <> SUM(b.debit)`;
         // const sqlQuery = `SELECT fl.franchise_id, SUM(sa.NetSales) as cashAndCashEq FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE ` + 
         //     `fl.franchise_id IN (?) AND sa.InvoiceCreationDate > '2015-01-01' AND sa.InvoiceCreationDate <= '${invoiceCreationDate}' GROUP BY fl.franchise_name`;
+        
         
         Promise.all(
             [
@@ -29,12 +29,10 @@ const getCashAndCashEq = (req, res) => {
                 runSQLQueries(sqlQuery2, connection, franchiseIds),
             ])
             .then((results) => {
-
                 let response = {};
                 const strResponse = JSON.stringify(results);
                 const jsonResponse = JSON.parse(strResponse);
                 
-                console.log('jsonResponse----', jsonResponse);
                 jsonResponse.map((data) => {
                     Array.from(data).forEach(obj => {
                         Object.keys(obj).forEach(key => {
@@ -54,9 +52,9 @@ const getCashAndCashEq = (req, res) => {
 };
 
 const getAccountsReceivables = (req, res) => {
-    // console.log('getAccountsReceivables API called--')
+    console.log('getAccountsReceivables API called--')
     var franchiseIds = req.body.franchiseIds;
-    // console.log('franchiseIds', franchiseIds);
+    console.log('franchiseIds', franchiseIds);
     
     db.getConnection((err, connection) => {
         if(err) { 
@@ -65,7 +63,7 @@ const getAccountsReceivables = (req, res) => {
         }
 
         var invoiceCreationDate = req.query.invoiceCreationDate;
-        // console.log('invoiceCreationDate----', invoiceCreationDate);
+        console.log('invoiceCreationDate----', invoiceCreationDate);
 
         const query1 = `SELECT fl.franchise_id, SUM(sa.NetSales) as netPrice FROM franchise_locations fl INNER JOIN sales_actual sa ON fl.location_id = sa.Location WHERE ` + 
             `fl.franchise_id IN (?) AND sa.InvoiceCreationDate > '2015-01-01' AND sa.InvoiceCreationDate <= '${invoiceCreationDate}' GROUP BY fl.franchise_name`;
@@ -107,7 +105,7 @@ const getAccountsReceivables = (req, res) => {
                         });
                     });
                 });
-                // console.log('response---', response);
+                console.log('response---', response);
                 res.send(JSON.stringify(response)); 
             })
     })
